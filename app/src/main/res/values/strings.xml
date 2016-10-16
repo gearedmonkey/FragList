@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">FragList</string>
+    <string name="add_an_item">Add an item</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
