@@ -1,6 +1,8 @@
 package com.example.longatoj.fraglist;
 
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -27,19 +29,15 @@ import java.util.List;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class BlankFragment extends ListFragment {
+public class MainFragment extends ListFragment {
 
     ToDoListItemDAO toDoListItemDAO;
     private final String TAG = "FRAG";
-
-    public BlankFragment() {
+    ArrayAdapter<ToDoListItem> arrayAdapter;
+    public MainFragment() {
         // Required empty public constructor
     }
 
-    public void showTimePickerDialog() {
-        DialogFragment newFragment = new TimePickerFragment();
-        newFragment.show(getFragmentManager(), "timePicker");
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -53,20 +51,28 @@ public class BlankFragment extends ListFragment {
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        final ArrayAdapter<ToDoListItem> arrayAdapter = new ArrayAdapter<ToDoListItem>(
+
+        arrayAdapter = new ArrayAdapter<ToDoListItem>(
                 getActivity(), android.R.layout.simple_list_item_1, toDoListItemDAO.getItems());
         setListAdapter(arrayAdapter);
         getListView().setAdapter(arrayAdapter);
+        toDoListItemDAO.setAdapter(arrayAdapter);
         Button b = (Button) view.findViewById(R.id.btnAddItem);
         b.setOnClickListener((v)->btnAddItemClicked(v,arrayAdapter));
+        
+        getListView().setOnItemLongClickListener(this::deleteItem);
         super.onViewCreated(view, savedInstanceState);
     }
 
+    private boolean deleteItem(AdapterView<?> adapterView, View view, int position, long l) {
+        ToDoListItem selectedItem = (ToDoListItem) adapterView.getItemAtPosition(position);
+        logEvent("List Item was long clicked: " + selectedItem);
+        toDoListItemDAO.deleteItem(selectedItem, getContext(), arrayAdapter);
+        return true;
+    }
+
+
     private void btnAddItemClicked(View v, ArrayAdapter<ToDoListItem> arrayAdapter) {
-        //TODO add dialog for new ToDoListItem
-        toDoListItemDAO.addItem(new ToDoListItem(
-                "Hard Coded", Calendar.getInstance().getTime(), ToDoListItem.PRIORITY_LOW));
-        arrayAdapter.notifyDataSetChanged();
         DialogFragment newFragment = new AddToDoListItemDialog();
         newFragment.show(getFragmentManager(), "dialog");
         logEvent("A new item is being created");
@@ -75,11 +81,15 @@ public class BlankFragment extends ListFragment {
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
-
         ToDoListItem selectedItem = (ToDoListItem) l.getItemAtPosition(position);
 
+        DialogFragment newFragment = new ViewToDoListItemDialog();
+        Bundle b = new Bundle();
+        b.putParcelable("item", selectedItem);
+        newFragment.setArguments(b);
+        newFragment.show(getFragmentManager(), "viewer");
+
         logEvent("List Item was clicked: " + selectedItem);
-        //TODO open dialog to edit item
     }
 
     private void logEvent(String desc) {
