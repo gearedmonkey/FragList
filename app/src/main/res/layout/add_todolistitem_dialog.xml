@@ -44,9 +44,10 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Enter date"
+            android:text="Select date and time"
             android:id="@+id/txtTime"/>
     </LinearLayout>
+
     <Button
         android:id="@+id/btnDone"
         android:layout_width="wrap_content"

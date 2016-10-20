@@ -3,9 +3,7 @@ package com.example.longatoj.fraglist;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 /**
  * POJO
@@ -14,17 +12,48 @@ public class ToDoListItem implements Parcelable {
     private String description;
     private Date timeToComplete;
     private String priority;
+    private int status;
+    private long id;
     public static String PRIORITY_HIGH = "High";
     public static String PRIORITY_MEDIUM = "Medium";
     public static String PRIORITY_LOW = "Low";
+    public static int COMPLETED = 1;
+    public static int INCOMPLETE = 0;
 
     public ToDoListItem(){
         //empty constructor
     }
-    public ToDoListItem(String description, Date timeToComplete, String priority) {
+    public ToDoListItem(String description, Date timeToComplete, String priority, int status) {
         this.description = description;
         this.timeToComplete = timeToComplete;
         this.priority = priority;
+        this.status = status;
+    }
+
+    protected ToDoListItem(Parcel in) {
+        description = in.readString();
+        priority = in.readString();
+        id = in.readLong();
+    }
+
+    public static final Creator<ToDoListItem> CREATOR = new Creator<ToDoListItem>() {
+        @Override
+        public ToDoListItem createFromParcel(Parcel in) {
+            return new ToDoListItem(in);
+        }
+
+        @Override
+        public ToDoListItem[] newArray(int size) {
+            return new ToDoListItem[size];
+        }
+    };
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public void setDescription(String description) {
@@ -46,8 +75,8 @@ public class ToDoListItem implements Parcelable {
         return timeToComplete;
     }
 
-    public String getPriority() {
-        return priority;
+    public  String getPriority() {
+        return this.priority;
     }
 
     public String getDescription() {
@@ -60,9 +89,18 @@ public class ToDoListItem implements Parcelable {
         list[2] = PRIORITY_LOW;
         return list;
     }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
     @Override
     public String toString() {
-        return description;
+        return description + " Priority: " + priority;
     }
 
     @Override
@@ -78,5 +116,25 @@ public class ToDoListItem implements Parcelable {
                 this.getTimeToComplete().toString()
         });
 
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ToDoListItem)
+            return this.id == ((ToDoListItem) obj).getId();
+        return super.equals(obj);
+    }
+    public int comparePriority(ToDoListItem t2) {
+        return Integer.compare(getPriorityNum(), t2.getPriorityNum());
+    }
+
+    public int getPriorityNum() {
+        if(this.priority.equalsIgnoreCase(PRIORITY_HIGH))
+            return 1;
+        else if(this.priority.equalsIgnoreCase(PRIORITY_MEDIUM))
+            return 2;
+        else if(this.priority.equalsIgnoreCase(PRIORITY_LOW))
+            return 3;
+        else return -1;
     }
 }

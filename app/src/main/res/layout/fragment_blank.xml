@@ -9,7 +9,25 @@
         android:text="@string/add_an_item"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
-
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/btnSortByDate"
+            android:text="Sort by earliest date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <Button
+            android:id="@+id/btnSortByPriority"
+            android:text="Sort by priority"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <Button
+            android:id="@+id/btnSortByStatus"
+            android:text="Sort by status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
     <ListView
         android:id="@android:id/list"
         android:layout_width="match_parent"

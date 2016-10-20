@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -15,6 +14,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -25,8 +27,6 @@ import android.widget.Toast;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-
-import static com.example.longatoj.fraglist.R.id.priorities;
 
 /**
  * Created by Jordan on 10/16/2016.
@@ -58,6 +58,12 @@ public class ViewToDoListItemDialog extends DialogFragment implements
     }
 
     @Override
+    public void onStop() {
+        super.onStop();
+        ToDoListItemDAO.getInstance().saveItem(item);
+    }
+
+    @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         LinearLayout dl = (LinearLayout) view.findViewById(R.id.layoutDescription);
         description = (TextView) view.findViewById(R.id.txteditDescription);
@@ -70,10 +76,35 @@ public class ViewToDoListItemDialog extends DialogFragment implements
                 android.R.layout.simple_spinner_dropdown_item, ToDoListItem.getPriorities());
         priorities.setAdapter(listPriorities);
         priorities.setSelection(listPriorities.getPosition(item.getPriority()));
+
+        Button btnCancelEdit = (Button) view.findViewById(R.id.btnEditCancel);
+        btnCancelEdit.setOnClickListener((e)->{
+            ToDoListItemDAO.getInstance().saveItem(item);
+            this.dismiss();
+
+        });
+
+        Button btnDeleteEdit = (Button) view.findViewById(R.id.btnEditDelete);
+        btnDeleteEdit.setOnClickListener(view1 -> {
+            ToDoListItemDAO.getInstance().removeItem(item);
+            ToDoListItemDAO.getInstance().emitChange();
+            this.dismiss();
+        }
+        );
         setupDateArea(view);
 
-
+        CheckBox cbCompleted = (CheckBox) view.findViewById(R.id.cbCompleted);
+        cbCompleted.setChecked(item.getStatus() == ToDoListItem.COMPLETED);
+        cbCompleted.setOnCheckedChangeListener(this::cbCompletedChanged);
         super.onViewCreated(view, savedInstanceState);
+    }
+
+    private void cbCompletedChanged(CompoundButton compoundButton, boolean b) {
+        if(b)
+            item.setStatus(ToDoListItem.COMPLETED);
+        else
+            item.setStatus(ToDoListItem.INCOMPLETE);
+        Toast.makeText(getContext(),"Complete status changed", Toast.LENGTH_SHORT).show();
     }
 
     private void setupDateArea(View view) {
