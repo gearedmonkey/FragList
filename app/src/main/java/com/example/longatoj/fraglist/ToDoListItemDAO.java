@@ -1,5 +1,6 @@
 package com.example.longatoj.fraglist;
 
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -10,6 +11,9 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
+import android.os.Build;
+import android.provider.Telephony;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -21,8 +25,10 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -139,11 +145,37 @@ public class ToDoListItemDAO {
                     Toast.makeText(context,"Item deleted", Toast.LENGTH_SHORT).show();
                     break;
             }
+
         };
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setMessage("Are you sure you want to delete this item?").setPositiveButton("Yes", dialogClickListener)
-                .setNegativeButton("No", dialogClickListener).show();
+//        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+//        builder.setMessage("Are you sure you want to delete this item?").setPositiveButton("Yes", dialogClickListener)
+//                .setNegativeButton("No", dialogClickListener).show();
+        String msg = "Hey, I'm going to be doing this: \""
+                + selectedItem.getDescription()
+                + "\" at "
+                + selectedItem.getTimeToComplete()
+                + " want to join me?";
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
+            String defaultSmsPackageName = Telephony.Sms.getDefaultSmsPackage(context); //Need to change the build to API 19
+
+            Intent sendIntent = new Intent(Intent.ACTION_SEND);
+            sendIntent.setType("text/plain");
+            sendIntent.putExtra(Intent.EXTRA_TEXT,msg);
+
+            if (defaultSmsPackageName != null)//Can be null in case that there is no default, then the user would be able to choose any app that support this intent.
+            {
+                sendIntent.setPackage(defaultSmsPackageName);
+            }
+            context.startActivity(sendIntent);
+
+        }
+        else{
+            Intent sendIntent = new Intent(Intent.ACTION_VIEW);
+            sendIntent.setData(Uri.parse("sms:"));
+            sendIntent.putExtra("sms_body", msg);
+            context.startActivity(sendIntent);
+        }
     }
 
     public String[] getEntries() {
@@ -159,20 +191,12 @@ public class ToDoListItemDAO {
 
     public void setNotification(FragmentActivity activity, Context context, ToDoListItem item) {
         logEvent("Creating notification");
-        //TODO make notification appear at time in item.
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(context)
-                        .setSmallIcon(R.mipmap.ic_launcher)
-                        .setContentTitle("ToDoList")
-                        .setContentText("Don't forget: " + item.getDescription());
-
-        Intent i = new Intent(activity, MainActivity.class);
-        PendingIntent pi = PendingIntent.getActivity(context, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
-        mBuilder.setContentIntent(pi);
-        int mNotificationId = 001;
-        NotificationManager mNotifyMgr =
-                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotifyMgr.notify(mNotificationId, mBuilder.build());
+        Intent intent = new Intent(context, NotificationReciever.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(context.ALARM_SERVICE);
+        Calendar c = new GregorianCalendar();
+        c.setTime(item.getTimeToComplete());
+        alarmManager.set(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), pendingIntent);
 
     }
 

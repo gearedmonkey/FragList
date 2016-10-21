@@ -14,12 +14,12 @@
         android:layout_height="wrap_content">
         <Button
             android:id="@+id/btnSortByDate"
-            android:text="Sort by earliest date"
+            android:text="Earlier first"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
         <Button
             android:id="@+id/btnSortByPriority"
-            android:text="Sort by priority"
+            android:text="Highest priority"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
         <Button

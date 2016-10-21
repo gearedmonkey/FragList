@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -76,7 +77,19 @@ public class ViewToDoListItemDialog extends DialogFragment implements
                 android.R.layout.simple_spinner_dropdown_item, ToDoListItem.getPriorities());
         priorities.setAdapter(listPriorities);
         priorities.setSelection(listPriorities.getPosition(item.getPriority()));
+        priorities.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                String s = (String) adapterView.getItemAtPosition(i);
+                item.setPriority(s);
+                ToDoListItemDAO.getInstance().emitChange();
+            }
 
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
         Button btnCancelEdit = (Button) view.findViewById(R.id.btnEditCancel);
         btnCancelEdit.setOnClickListener((e)->{
             ToDoListItemDAO.getInstance().saveItem(item);
